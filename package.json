@@ -1,0 +1,16 @@
+{
+  "name": "openclaw-trello-webhook",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "register:webhook": "node scripts/register-webhook.js",
+    "list:webhooks": "node scripts/list-webhooks.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2"
+  }
+}

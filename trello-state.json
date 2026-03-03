@@ -1,0 +1,9 @@
+{
+  "version": 1,
+  "processedCardIds": {},
+  "webhook": {
+    "id": null,
+    "callbackUrl": null,
+    "idModel": null
+  }
+}
