@@ -1,9 +1,27 @@
 {
   "version": 1,
-  "processedCardIds": {},
+  "processedCardIds": {
+    "69a7107a5816353e22fc45d0": {
+      "processedAt": "2026-03-03T16:46:56.637Z",
+      "name": "Say hello to me in telegram bot",
+      "url": "https://trello.com/c/tIpHZf7c/2-say-hello-to-me-in-telegram-bot",
+      "listBefore": "To-do",
+      "listAfter": "Doing",
+      "analysis": {
+        "summary": "Say hello to me in telegram bot",
+        "extractedRequirements": [],
+        "suggestedNextSteps": [
+          "Confirm what output is expected (code/text/commit).",
+          "Clarify deadline and acceptance criteria.",
+          "Proceed in a branch + PR, then merge."
+        ]
+      }
+    }
+  },
   "webhook": {
-    "id": null,
-    "callbackUrl": null,
-    "idModel": null
-  }
+    "id": "69a70fdec482c0ada5d9cf51",
+    "callbackUrl": "https://hospitals-figures-bool-booth.trycloudflare.com/trello/webhook",
+    "idModel": "69a70150cf40c1ef946e0286"
+  },
+  "pendingApprovals": {}
 }

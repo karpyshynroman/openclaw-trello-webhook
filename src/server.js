@@ -1,5 +1,5 @@
 import express from 'express'
-import { loadState, saveState, isProcessed, markProcessed } from './state.js'
+import { loadState, saveState, isProcessed, markProcessed, addPending } from './state.js'
 import { verifyTrelloSignature } from './trelloSignature.js'
 import { trelloGet } from './trelloApi.js'
 import { analyzeCard } from './analyze.js'
@@ -64,7 +64,17 @@ app.post('/trello/webhook', express.raw({ type: '*/*' }), async (req, res) => {
 
     const analysis = analyzeCard(card)
 
-    // For now: store analysis + mark processed.
+    // Store a "pending approval" record for the assistant/human.
+    addPending(state, cardId, {
+      name: card?.name,
+      url: card?.url,
+      listBefore,
+      listAfter,
+      analysis,
+      card: { name: card?.name, desc: card?.desc, url: card?.url }
+    })
+
+    // Mark processed so Trello retries / repeated moves don't spam.
     markProcessed(state, cardId, {
       name: card?.name,
       url: card?.url,
@@ -72,12 +82,14 @@ app.post('/trello/webhook', express.raw({ type: '*/*' }), async (req, res) => {
       listAfter,
       analysis
     })
+
     saveState(state)
 
-    // TODO: integrate with OpenClaw messaging or task runner.
-    // For safety, we do not execute arbitrary instructions from Trello automatically.
-    console.log('[DOING] Card moved to Doing:', card?.name, card?.url)
-    console.log('[ANALYSIS]', JSON.stringify(analysis))
+    console.log('--- OPENCLAW APPROVAL NEEDED ---')
+    console.log('[DOING] Card moved to Doing:', card?.name)
+    console.log('[URL]', card?.url)
+    console.log('[ANALYSIS]', JSON.stringify(analysis, null, 2))
+    console.log('-------------------------------')
 
     return res.status(200).send('ok')
   } catch (e) {

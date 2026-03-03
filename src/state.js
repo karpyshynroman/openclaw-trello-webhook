@@ -5,9 +5,20 @@ const STATE_PATH = process.env.STATE_PATH || path.join(process.cwd(), 'trello-st
 
 export function loadState() {
   try {
-    return JSON.parse(fs.readFileSync(STATE_PATH, 'utf-8'))
+    const s = JSON.parse(fs.readFileSync(STATE_PATH, 'utf-8'))
+    // Backward compatible defaults
+    s.processedCardIds ||= {}
+    s.pendingApprovals ||= {}
+    s.webhook ||= { id: null, callbackUrl: null, idModel: null }
+    s.version ||= 1
+    return s
   } catch {
-    return { version: 1, processedCardIds: {}, webhook: { id: null, callbackUrl: null, idModel: null } }
+    return {
+      version: 1,
+      processedCardIds: {},
+      pendingApprovals: {},
+      webhook: { id: null, callbackUrl: null, idModel: null }
+    }
   }
 }
 
@@ -22,4 +33,13 @@ export function markProcessed(state, cardId, meta = {}) {
 
 export function isProcessed(state, cardId) {
   return Boolean(state?.processedCardIds?.[cardId])
+}
+
+export function addPending(state, cardId, meta = {}) {
+  state.pendingApprovals ||= {}
+  state.pendingApprovals[cardId] = { createdAt: new Date().toISOString(), ...meta }
+}
+
+export function removePending(state, cardId) {
+  if (state?.pendingApprovals) delete state.pendingApprovals[cardId]
 }
