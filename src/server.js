@@ -3,6 +3,7 @@ import { loadState, saveState, isProcessed, markProcessed, addPending } from './
 import { verifyTrelloSignature } from './trelloSignature.js'
 import { trelloGet } from './trelloApi.js'
 import { analyzeCard } from './analyze.js'
+import { openclawSendMessage } from './openclawGateway.js'
 
 const app = express()
 
@@ -90,6 +91,37 @@ app.post('/trello/webhook', express.raw({ type: '*/*' }), async (req, res) => {
     console.log('[URL]', card?.url)
     console.log('[ANALYSIS]', JSON.stringify(analysis, null, 2))
     console.log('-------------------------------')
+
+    // Notify Roma in Telegram via OpenClaw Gateway (Tools Invoke API)
+    // Requires:
+    // - OPENCLAW_GATEWAY_TOKEN
+    // - OPENCLAW_TARGET_CHAT (e.g. telegram:105322994)
+    try {
+      const target = process.env.OPENCLAW_TARGET_CHAT
+      if (target) {
+        const reqs = (analysis?.extractedRequirements || []).slice(0, 8)
+        const reqText = reqs.length ? reqs.map((x) => `- ${x}`).join('\n') : '(no explicit requirements in description)'
+
+        const msg = [
+          '📝 Trello → Doing (approval needed)',
+          `Title: ${card?.name}`,
+          `URL: ${card?.url}`,
+          '',
+          'Extracted:',
+          reqText,
+          '',
+          'Reply with:',
+          `- approve ${cardId}  (start work)`,
+          `- reject ${cardId}   (ignore)`
+        ].join('\n')
+
+        await openclawSendMessage({ target, message: msg })
+      } else {
+        console.log('[WARN] OPENCLAW_TARGET_CHAT not set; cannot notify Telegram')
+      }
+    } catch (e) {
+      console.log('[WARN] Failed to notify Telegram via OpenClaw:', e?.message || e)
+    }
 
     return res.status(200).send('ok')
   } catch (e) {
